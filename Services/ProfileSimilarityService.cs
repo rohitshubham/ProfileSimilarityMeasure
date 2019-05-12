@@ -1,5 +1,6 @@
 ﻿using System;
 using PropertyInfo = System.Reflection.PropertyInfo;
+using SimilarityApp.Helpers;
 
 namespace SimilarityApp.Services
 {
@@ -16,7 +17,7 @@ namespace SimilarityApp.Services
             profile_1.Age = 23;
             profile_1.Gender = "Male";
             profile_1.Name = "Rohit Raj";
-            profile_2.Age = 23;
+            profile_2.Age = 22;
             profile_2.Gender = "Male";
             profile_2.Name = "Rohit Raj";
             GetPrimitiveProfileProptiesSimilarity(profile_1, profile_2);
@@ -50,9 +51,17 @@ namespace SimilarityApp.Services
                                 Console.WriteLine($"{pi.Name} matches 100%");
                             }
                         }
+                        if (typeof(int).IsAssignableFrom(pi.PropertyType) && !Enum.IsDefined(enumType: typeof(ExcludeTypeComparision), value: pi.Name))
+                        {
+                            var sourcePropertyValue = (int)sourceType.GetProperty(pi.Name).GetValue(sourceProfile, null);
+                            var destinationPropertyValue = (int)destinationType.GetProperty(pi.Name).GetValue(destinationProfile, null);
+
+                            var percentMatch = NormalizedScoreHelper.GetNormalizedValue(sourcePropertyValue, destinationPropertyValue);
+                            Console.WriteLine($"{pi.Name} matches {percentMatch}%");
+                        }
                     }
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     Console.WriteLine(e);
                 }
