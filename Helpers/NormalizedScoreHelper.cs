@@ -5,9 +5,8 @@ namespace SimilarityApp.Helpers
     public static class NormalizedScoreHelper {
 
         private const int rectangles = 100000; // more rectangles = more precise, less rectangles = quicker execution
-        private const int mean = 15; // we take mean as 15
 
-        public static double GetNormalizedValue(int value1, int value2)
+        public static double GetNormalizedValue(int value1, int value2, int mean = 15) // We take 15 as a deafult mean value
         {
             double z1 = ((double)value2 - (double)value1) / mean;
             double z2 = 0.0;

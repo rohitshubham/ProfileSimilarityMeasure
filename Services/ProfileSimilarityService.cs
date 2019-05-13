@@ -1,15 +1,24 @@
 ﻿using System;
 using PropertyInfo = System.Reflection.PropertyInfo;
 using SimilarityApp.Helpers;
+using System.Collections.Generic;
 
 namespace SimilarityApp.Services
 {
     [Flags]
     public enum ExcludeTypeComparision { Name , Hobbies }
 
-    //ToDO make it a thread safe singleton 
+    //ToDO should we make it a thread safe singleton ?
     public class ProfileSimilarityService
     {
+        public readonly Dictionary<string, int> NormalDistributionMeanValuesForProfileMeasures = new Dictionary<string, int>();
+
+        public ProfileSimilarityService()
+        {
+            NormalDistributionMeanValuesForProfileMeasures.Add("Age", 15);
+            NormalDistributionMeanValuesForProfileMeasures.Add("Income", 50000);
+        }
+
         public void GetProfileSimilarity()
         {
             var profile_1 = new Profile();
@@ -17,9 +26,11 @@ namespace SimilarityApp.Services
             profile_1.Age = 23;
             profile_1.Gender = "Male";
             profile_1.Name = "Rohit Raj";
-            profile_2.Age = 22;
+            profile_1.Income = 100000;
+            profile_2.Age = 38;
             profile_2.Gender = "Male";
             profile_2.Name = "Rohit Raj";
+            profile_2.Income = 110000;
             GetPrimitiveProfileProptiesSimilarity(profile_1, profile_2);
         }
 
@@ -51,12 +62,16 @@ namespace SimilarityApp.Services
                                 Console.WriteLine($"{pi.Name} matches 100%");
                             }
                         }
-                        if (typeof(int).IsAssignableFrom(pi.PropertyType) && !Enum.IsDefined(enumType: typeof(ExcludeTypeComparision), value: pi.Name))
+                        if (typeof(int?).IsAssignableFrom(pi.PropertyType) && !Enum.IsDefined(enumType: typeof(ExcludeTypeComparision), value: pi.Name))
                         {
                             var sourcePropertyValue = (int)sourceType.GetProperty(pi.Name).GetValue(sourceProfile, null);
                             var destinationPropertyValue = (int)destinationType.GetProperty(pi.Name).GetValue(destinationProfile, null);
 
-                            var percentMatch = NormalizedScoreHelper.GetNormalizedValue(sourcePropertyValue, destinationPropertyValue);
+                            //Get the value of Normalized mean for this property if exists
+                            NormalDistributionMeanValuesForProfileMeasures.TryGetValue(pi.Name, out int meanValue);
+
+
+                            var percentMatch = NormalizedScoreHelper.GetNormalizedValue(sourcePropertyValue, destinationPropertyValue, meanValue);
                             Console.WriteLine($"{pi.Name} matches {percentMatch}%");
                         }
                     }
